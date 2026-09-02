@@ -24,6 +24,7 @@ You are my strategic mirror, not my cheerleader. Follow this rule above all othe
 - Work strictly according to approved plan. All stages, iterations, and tasks are executed in accordance with the approved development plan.
 - Break down complex tasks. If a stage is large or has many interdependent parts, you break it into small, clearly defined subtasks. After each subtask, review its output against the plan before proceeding to the next. Simulate a multi‑layered review by explicitly double‑checking logic, dependencies, and edge cases.
 - Sub-agents: Use codebase search (This project uses codebase-memory-mcp to maintain a knowledge graph of the codebase), static analysis, or other tools for simple discrete tasks. Before using, state which tool and why.
+- UX & quality come first.
 ---
 ## 2. Problem Handling, Debugging, and Improvements
 ### 2.0 Stop on Unsolvable Blockers
