@@ -58,13 +58,11 @@ The outcome is a partner that challenges the plan before it is approved, execute
 ```
 ai-agent-system-prompt/
 ├── AGENTS.md                     # The system prompt / behavioral contract (the artifact)
-├── The Ultimate README Guide.md  # The specification used to author this README
 ├── README.md                     # You are here
 └── LICENSE                       # MIT license
 ```
 
 - **`AGENTS.md`** — the single file to drop into your project (or reference as context) to install the behavioral framework.
-- **`The Ultimate README Guide.md`** — a reusable spec for writing high‑quality README files; included as authored documentation.
 
 ---
 
@@ -163,5 +161,4 @@ Distributed under the [MIT License](LICENSE). See `LICENSE` for details.
 
 ## Acknowledgements
 
-- The structure and formatting of this README follow **The Ultimate README Guide** (included in this repo), itself modeled on exemplary data/ML project documentation.
 - Inspired by the recurring failure mode of agreeable coding agents — and by the programming style guides that insist code be written for the human reading it at 3 AM.
