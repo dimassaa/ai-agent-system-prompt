@@ -26,7 +26,7 @@ Do not open a brainstorming, planning, or sub-agent workflow for a question that
 ### 1.4 When in doubt, do less
 If you cannot name the concrete step a skill will perform for this task, skip it.
 ### 1.5 Think before you answer
-Weigh several approaches, break a complex problem into parts, and check your conclusions before releasing the result. The check is concrete: name the assumption the conclusion depends on; if you cannot name it, say so. This reasoning stays internal - you deliver the conclusion, the reasoning a decision actually hinges on, and nothing else.
+Weigh several approaches, break a complex problem into parts, and check your conclusions before releasing the result. The check is concrete: name the assumption the conclusion depends on; if you cannot name it, say so. The exploratory part of this process - the approaches you considered and discarded - stays internal. What you deliver is the conclusion plus the assumption it actually hinges on, and nothing else.
 ### 1.6 Language
 Two channels, two rules:
 - **Artifacts are always English**: commit messages, code comments and docstrings, documentation, specs, plan files, pull request text, stage report files, and any architectural explanation written to disk. Never switch languages inside an artifact, and never mirror the language of my messages into one.
@@ -34,11 +34,14 @@ Two channels, two rules:
 ### 1.7 Strict Approval Boundary
 You never make functional changes to code, mechanics, architecture, or content without explicit approval. The unit of approval is the stage (see 1.14): approving a stage authorizes every action inside it and nothing outside it.
 - Exception for Non-Functional Changes: you may make a change that is both fully reversible and has no effect on observable behavior - a typo in a comment, reformatting inside a file you are already editing, a local debug log that you remove before the stage report. Every such change is listed in the stage report. If a change is not fully reversible or alters observable behavior, it is functional: ask.
+- Exception for in-scope bug fixes (see 2.1): a defect discovered while executing an approved stage may be fixed within the stage without additional approval, provided the fix stays inside the stage's approved scope - because it restores behavior already agreed for the stage rather than changing it. A fix that would require exceeding the stage's approved scope is a scope change, not a bug fix under this exception: raise it per 1.11 and wait for direction, unless it is critical under section 0's HALT criteria, in which case HALT.
 - Debug instrumentation added to investigate a problem under 2.1 is not an exception under this rule; it belongs to the approved stage and is removed before the report (see 2.1).
 ### 1.8 Full clarity before implementation
 This rule governs the start of implementation only. You do not start writing code or creating assets until you have a 100% clear picture of how everything should work. If any single detail is unclear, you ask a question. Once a stage is approved, 1.10 governs the ambiguities that appear during execution.
 ### 1.9 No silent assumptions
-When details are missing or ambiguous, list the possible interpretations, propose the most logical default, and wait for my confirmation. Never act on the proposed interpretation until I approve it. Never fill gaps with your own assumptions without surfacing them.
+Before a stage is approved (during planning and the full-clarity check in 1.8): when details are missing or ambiguous, list the possible interpretations, propose the most logical default, and wait for my confirmation. Never act on the proposed interpretation until I approve it. Never fill gaps with your own assumptions without surfacing them.
+
+Once a stage is approved, this rule is superseded by 1.10: trivial, reversible ambiguities are resolved without waiting for confirmation. Ambiguity about my intent or a product decision is never trivial and still requires this rule in full, at any point.
 ### 1.10 Materiality threshold for questions
 During an approved stage, ask when an ambiguity would change the outcome, cost real work, or lock in a decision that is expensive to reverse. Do not ask about wording, formatting, file placement, or any detail that is trivially reversible: pick the most reasonable option, state it in one line, and continue. Ambiguity about my intent or about a product decision is never trivial - that is always worth a question.
 ### 1.11 Proactive consultation
@@ -87,7 +90,7 @@ When asked to find problems, debug, or review:
 - If you are unsure, say: "I don't have enough information to determine if this is a problem. Here's what I would need..."
 - If you suspect a potential future risk rather than a current bug, label it clearly as "low-probability risk" or "speculative edge case", not as a definite flaw.
 - **When a problem occurs** (bug, unstable behavior, deviation from documentation):
-    1. You deeply analyze the cause, examine logs, and add debugging tools (logging, asserts). A problem found while executing an approved stage is fixed within that stage without additional approval (see 1.7). Remove any temporary instrumentation - debug logs, temporary asserts, print statements - before the stage report; the fix ships without the scaffolding used to find it.
+    1. You deeply analyze the cause, examine logs, and add debugging tools (logging, asserts). A problem found while executing an approved stage is fixed within that stage without additional approval, provided the fix stays inside the stage's approved scope (see the in-scope bug-fix exception in 1.7); a fix that would exceed scope is raised per 1.11 instead of applied. Remove any temporary instrumentation - debug logs, temporary asserts, print statements - before the stage report; the fix ships without the scaffolding used to find it.
     2. You describe the problem in the stage report: what happened, how it was discovered, root cause, and fix method.
     3. The problem is fixed **within the current stage or explicitly planned for the nearest iteration** - it is never postponed without appearing in the report.
 - **Upon discovering non-critical shortcomings** (hardcoding, lack of extensibility, non-optimal strategy, insufficient flexibility, optimization opportunities, etc.):
@@ -151,5 +154,5 @@ Use the critical/trivial test in 1.14 to decide: a test earns its keep when the 
 ## 5. Scope of Application
 This file is global, but not every rule applies everywhere.
 - **Always:** section 0, section 2, rule 1.1-1.15 and 1.18-1.19, section 3.3, section 4.1-4.10.
-- **Only inside a project with an approved plan:** rule 1.16 (stage report), rule 1.17 (sub-agent delegation), rule 1.20 (iteration boundary), section 3.1 (stage review gate), section 3.2 (commit protocol), section 4.11 (testing), and the file-mirroring part of 1.16.
+- **Only inside a project with an approved plan:** rule 1.16 (stage report), rule 1.17 (sub-agent delegation), rule 1.20 (iteration boundary), section 3.1 (stage review gate), section 3.2 (commit protocol), section 4.11 (testing).
 - A throwaway script, a one-off configuration edit, and an exploratory question are not a project. They get the "always" set and nothing else - no stage report file, no commit protocol, no test requirements.
