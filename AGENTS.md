@@ -153,6 +153,40 @@ Use the critical/trivial test in 1.14 to decide: a test earns its keep when the 
 ---
 ## 5. Scope of Application
 This file is global, but not every rule applies everywhere.
-- **Always:** section 0, section 2, rule 1.1-1.15 and 1.18-1.19, section 3.3, section 4.1-4.10.
+- **Always:** section 0, section 2, rule 1.1-1.15 and 1.18-1.19, section 3.3, section 4.1-4.10, section 6.
 - **Only inside a project with an approved plan:** rule 1.16 (stage report), rule 1.17 (sub-agent delegation), rule 1.20 (iteration boundary), section 3.1 (stage review gate), section 3.2 (commit protocol), section 4.11 (testing).
 - A throwaway script, a one-off configuration edit, and an exploratory question are not a project. They get the "always" set and nothing else - no stage report file, no commit protocol, no test requirements.
+---
+## 6. Codebase Memory (codebase-memory-mcp)
+A persistent knowledge graph of the project is maintained by the `codebase-memory-mcp` MCP server: functions, classes, call chains, HTTP routes, and cross-service links, produced by tree-sitter parsing and stored locally in `~/.cache/codebase-memory-mcp/`. It is a structural backend with no LLM inside - you remain the layer that turns a question into a graph query.
+
+### 6.1 Use the graph before searching files
+For code discovery, prefer graph tools over grep, glob, and file-by-file reading. The difference is not marginal: a handful of structural queries costs roughly two orders of magnitude fewer tokens than reading the files they describe.
+1. `search_graph` - find functions, classes, routes, and variables by name pattern, label, and degree.
+2. `trace_path` - find callers (inbound) or callees (outbound) of a symbol.
+3. `get_code_snippet` - read the exact source of a qualified symbol.
+4. `check_index_coverage` - verify that the paths you cite are indexed and free of gaps.
+5. `query_graph` - run Cypher for questions the dedicated tools do not answer.
+6. `get_architecture` - languages, packages, entry points, routes, hotspots, and boundaries in one call.
+
+### 6.2 The graph is evidence, not proof
+- **A clean coverage result means "no recorded gap", never completeness.** Before any negative claim - nothing calls it, no such route, this is dead code - run `check_index_coverage` over the relevant scope, then read or grep every range and file it reports as partial, skipped, stale, or unknown.
+- **Verify material claims in the source.** Use `get_code_snippet` before asserting what a function does, and the file itself before asserting what its callers do.
+- **The index can lag.** At session start, after a compaction, and after pulling changes, confirm the project and its generation with `list_projects` or `index_status`; a stale index answers confidently and wrongly. If a project has no index, run `index_repository` or ask me. Never report a symbol as absent on a project that was never indexed.
+
+### 6.3 Depth of verification
+- **Scout (Tier 1)** - a few narrow calls for a quick positive answer. Provisional by construction: no claims of absence, no exhaustive impact, no dead code.
+- **Verify (Tier 2, default)** - task-directed evidence, both trace directions where the direction matters, exact snippets for material claims, coverage checked for every cited path.
+- **Auditor (Tier 3)** - bounded scope, current generation, complete relevant pagination, every limitation stated explicitly.
+
+### 6.4 Fall back to grep, glob, and read
+The graph indexes code, not everything else. Use plain tools for string literals, error messages, config values, shell scripts, Dockerfiles, and CI files, and whenever the graph returns nothing usable.
+
+### 6.5 Session resets and sub-agents
+- After a reset or a compaction, re-confirm project and generation before trusting any earlier graph result.
+- A subagent inherits neither this session nor necessarily the MCP tools. Query the graph and check coverage yourself, then hand the child the project, generation, bounded scope, queries with their pagination state, qualified symbols, paths, call-chain findings, coverage evidence, and unresolved questions. A child without MCP access reads the exact source instead of claiming graph evidence.
+
+### 6.6 Operations
+- Index a project with `index_repository`; the background watcher keeps it current afterwards.
+- Graph UI: `codebase-memory-mcp --ui=true --port=9749`, then http://localhost:9749.
+- Update: `bash ~/.local/bin/install.sh`. Uninstall: `codebase-memory-mcp uninstall` - it removes the MCP entry in `opencode.jsonc`, the skill, the agents, and the plugin under `~/.config/opencode/`.
