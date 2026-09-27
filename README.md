@@ -1,9 +1,10 @@
-# AI Agent System Prompt — Senior‑Engineer Behavioral Framework
+# AGENTS.md — Behavioral Contract for AI Coding Agents
 
-A ready‑to‑adopt system prompt that turns any capable LLM coding agent into a disciplined, honest senior engineer. It encodes adversarial thinking, strict approval boundaries, honest diagnostics, code‑quality rules, and a directive command language — so you get a strategic mirror, not a cheerleader.
+A ready-to-adopt agent instruction file that turns any capable LLM coding agent into a disciplined, honest senior engineer. It encodes adversarial review, strict approval boundaries, a stage-and-report delivery model, and code-quality rules — so you get a strategic mirror, not a cheerleader.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Repo Size](https://img.shields.io/github/repo-size/dimassaa/ai-agent-system-prompt)
+![Last Commit](https://img.shields.io/github/last-commit/dimassaa/ai-agent-system-prompt)
 
 ---
 
@@ -11,12 +12,14 @@ A ready‑to‑adopt system prompt that turns any capable LLM coding agent into 
 
 - [Introduction](#introduction)
 - [Why This Prompt Exists](#why-this-prompt-exists)
+- [Tech Stack and Requirements](#tech-stack-and-requirements)
 - [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-- [Key Features](#key-features)
-- [Directive Commands](#directive-commands)
+- [Quick Start](#quick-start)
+- [How the Contract Works](#how-the-contract-works)
+- [Verbatim Strings](#verbatim-strings)
 - [Limitations](#limitations)
 - [Recommendations](#recommendations)
+- [Support](#support)
 - [Contributing](#contributing)
 - [License](#license)
 - [Acknowledgements](#acknowledgements)
@@ -25,31 +28,50 @@ A ready‑to‑adopt system prompt that turns any capable LLM coding agent into 
 
 ## Introduction
 
-This repository publishes the **`AGENTS.md`** file — a complete behavioral contract for an AI coding agent. Where most agent prompts optimize for obedience, this one optimizes for **truthfulness and discipline**.
+This repository publishes a single file — **`AGENTS.md`** — that acts as a complete behavioral contract for an AI coding agent. Where most agent prompts optimize for obedience, this one optimizes for **truthfulness and discipline**.
 
-It installs a set of immutable rules into the agent's working context:
+It installs five rule groups into the agent's working context:
 
-- **Advisor stance** — the agent is a strategic mirror that challenges weak reasoning, never validates ego, and never invents problems to seem useful.
-- **Strict approval boundary** — no functional changes without explicit consent, while still permitting clearly documented non‑functional fixes.
-- **Honest diagnostics** — a rigorous discipline for reporting "no defects" when none exist, classifying speculative risks correctly, and never concealing findings.
-- **Quality‑first code** — obvious over clever, maintainable over elegant, comments that explain *why*, and dead code deleted.
-- **A directive command language** — `PLAN APPROVED`, `PONYTAIL REVIEW`, `DOCS UPDATE`, `CODE REVIEW`, `GRILL`, `SUMMARIZE`, and `HALT` unlock structured workflows on demand.
+- **Advisor stance** — the agent challenges weak reasoning, names self-deception, and states "Nothing to report" when there is genuinely nothing to report. It never fabricates findings to look useful.
+- **Delivery discipline** — work is split into stages; a stage is the unit of approval, of reporting, and of committing. A rejected stage starts a new iteration of the same stage instead of a new one.
+- **Honest diagnostics** — a strict protocol for bug reports, speculative risks, and non-critical findings, including mandatory escalation to a tracked `IMPROVEMENTS.md` backlog.
+- **Code quality** — obvious over clever, maintainable over elegant, comments that explain *why*, fail-fast validation, and a critical/trivial test that decides whether a test earns its keep.
+- **Scope of application** — an explicit list of which rules are global and which apply only inside a project with an approved plan.
 
-It is optimized for agents that have access to **codebase‑memory‑MCP** (a knowledge‑graph tool for code discovery), but the agent‑behavior sections are tool‑agnostic and carry over to any coding agent.
+> [!NOTE]
+> The file deliberately *inverts* the common skill-first setup. Rule 1.1 states that the file outranks session-injected skill mandates, and rules 1.2–1.4 treat loading a skill "just in case" as a defect. Adapt that stance only if your workflow depends on skills.
 
 ---
 
 ## Why This Prompt Exists
 
-Default agent behavior has a known failure mode: it is agreeable. It flatters, complies blindly, and hides uncertainty. Over months of use this silently degrades code quality, buries real risks, and lets junior‑level mistakes pass unreviewed.
+Default agent behavior has a known failure mode: it is agreeable. It flatters, complies blindly, and hides uncertainty. Used for months, this silently degrades code quality, buries real risks, and lets junior-level mistakes pass unreviewed.
 
-This prompt is a deliberate corrective. It treats the agent as a **senior engineer with a spine**:
+This prompt is a corrective. It treats the agent as a **senior engineer with a spine**:
 
-- Between 0% and 100% honesty, it selects 100% — even when that is uncomfortable.
+- Between comfortable and honest, it selects honest.
 - Between "just do it" and "ask first," it selects **ask first** whenever behavior would change.
 - Between bloat and minimalism, it selects minimal and forces justification for every abstraction.
+- Between "looks plausible" and "verified," it selects verified.
 
-The outcome is a partner that challenges the plan before it is approved, executes precisely once approved, and halts loudly when it hits a real blocker.
+The outcome is a partner that challenges the plan before approval, executes precisely afterward, halts loudly on a critical flaw, and never quietly defers a problem it found.
+
+---
+
+## Tech Stack and Requirements
+
+This repository ships prose, not code, so the stack is deliberately short. The table below is the "tech stack" for a single-artifact prompt project.
+
+| Category | Technology / Requirement |
+|---|---|
+| Artifact | `AGENTS.md` — GitHub-flavored Markdown, 158 lines |
+| Instruction standard | `AGENTS.md` (agents.md standard), plus equivalents such as `CLAUDE.md` where required |
+| Runtime | Any AI coding agent that loads a project-level or user-level instruction file |
+| Optional dependency | `subagent-driven-development` skill — used only for genuinely multi-task plans (rule 1.17) |
+| Build / test / CI | None — the artifact is not executable |
+| License | MIT |
+
+No runtime, package manager, or environment variable is involved. Installation is a file copy.
 
 ---
 
@@ -57,99 +79,172 @@ The outcome is a partner that challenges the plan before it is approved, execute
 
 ```
 ai-agent-system-prompt/
-├── AGENTS.md                     # The system prompt / behavioral contract (the artifact)
-├── README.md                     # You are here
-└── LICENSE                       # MIT license
+├── AGENTS.md                            # The behavioral contract (the artifact)
+├── README.md                            # You are here
+├── LICENSE                              # MIT license
+└── .gitignore                           # OS and editor cruft
 ```
 
-- **`AGENTS.md`** — the single file to drop into your project (or reference as context) to install the behavioral framework.
+The repository has no `src/`, no tests, and no dependency manifest. That is the intended shape: the deliverable is a text file that is read, not a program that is run.
 
 ---
 
-## Getting Started
+## Quick Start
 
-### Prerequisites
+All installation variants are listed below. Choose by how widely you want the contract to apply.
 
-- An AI coding agent that supports a project‑level instruction file (e.g., an `AGENTS.md`, `CLAUDE.md`, or custom instructions file), and/or
-- An agent with access to `codebase-memory-mcp` for the optional graph‑based code discovery features (Section 4 of the prompt).
+### Option A: Copy into a single project (recommended)
 
-### Installation
+Applies the contract to one repository only.
 
-1. **Copy the prompt into your project:**
+```bash
+cp AGENTS.md /path/to/your-project/AGENTS.md
+```
 
-   ```bash
-   cp AGENTS.md <your-project>/AGENTS.md
-   ```
+### Option B: Symlink for a single source of truth
 
-2. **Or reference it as agent context** — in whatever mechanism your agent uses to load persistent instructions (custom instructions, a knowledge file, or a rules file).
+Keeps the file in this repository as the canonical copy while multiple projects consume it. Edits here propagate everywhere.
 
-3. **Optional (graph‑based code discovery):** ensure your agent has `codebase-memory-mcp` configured and indexing your repository, then the priority‑order and evidence‑tier rules in Section 4 take effect automatically.
+```bash
+ln -s /path/to/ai-agent-system-prompt/AGENTS.md /path/to/your-project/AGENTS.md
+```
 
-### Usage
+### Option C: Install at user level
 
-Once loaded, the agent operates under the full contract. There is no "run" step — the instructions govern every interaction. The most visible feature is the directive command language: issue one of the commands below in your normal chat and the agent follows the corresponding workflow.
+Applies the contract to every session of one agent, regardless of repository. The path depends on the agent — for example `~/.config/opencode/AGENTS.md` for opencode.
+
+```bash
+cp AGENTS.md ~/.config/opencode/AGENTS.md
+```
+
+### Option D: Reference as context
+
+Load the file through whatever mechanism your agent uses for persistent instructions — a knowledge file, a rules file, or an explicit reference in your own prompt. Content is identical; only the loading mechanism differs.
+
+### Verifying the installation
+
+Ask the agent a question that requires the contract to answer, for example: *"What do you do when you find a non-critical issue?"* A compliant agent names the `IMPROVEMENTS.md` backlog and the stage report rather than answering vaguely. If it does not, the file is not being loaded.
 
 ---
 
-## Key Features
+## How the Contract Works
 
-| Feature | What it does |
-|---------|--------------|
-| Advisor stance | Challenges weak reasoning, exposes blind spots, refuses to validate ego. |
-| Honesty discipline | Reports "Nothing to report" when clean; never fabricates issues. |
-| Approval boundary | No functional change without consent; documents every non‑functional edit. |
-| Uncertainty protocol | Surfaces alternative interpretations, proposes a default, and waits for confirmation — no silent assumptions. |
-| Code‑quality rules | Obvious code, documented reasoning, fail‑fast validation, zero dead code. |
-| Knowledge‑graph integration | Priority‑ordered MCP tools with tiered evidence standards for code discovery. |
-| Directive language | Seven structured commands for plan‑based and review‑based workflows. |
+The delivery model is a stage loop. Every programming task moves through it; questions and research do not.
+
+```mermaid
+flowchart TD
+    A[Task received] --> B{Programming task?}
+    B -- No --> C[Answer directly<br/>no plan, no report]
+    B -- Yes --> D{Approved plan?}
+    D -- No --> E[2-6 line plan:<br/>stages, main risk, verification<br/>then wait]
+    E --> D
+    D -- Yes --> F[Execute one stage]
+    F --> G{Critical flaw<br/>discovered?}
+    G -- Yes --> M[HALT the affected work<br/>and flag it]
+    G -- No --> H[Verify]
+    H --> I[Stage report:<br/>chat TL;DR +<br/>.superpowers/reports/stage-NN.md]
+    I --> J{Approved?}
+    J -- No --> K[New iteration of the<br/>same stage, same number]
+    K --> F
+    J -- Yes --> L[Commit exactly one stage]
+    L --> A
+```
+
+### The rules, by section
+
+| Section of `AGENTS.md` | What it governs |
+|---|---|
+| 0. Advisor Stance | Challenge before approval, execute precisely after, HALT on a critical flaw |
+| 1. Core Interaction Principles | Precedence, skill discipline, approval boundary, stage model, stage report, iteration boundary |
+| 2. Problem Handling | Honest diagnostics, problem-fix protocol, escalation of non-critical findings |
+| 3. Additional Best Practices | Stage review gate, commit protocol, commenting rules |
+| 4. Code Quality | Simplicity, readability, fail-fast, dead code, testing discipline |
+| 5. Scope of Application | Which rules are always on, and which require an approved plan |
+
+### Deliverables the contract creates in your project
+
+| Artifact | Location | Versioned | Purpose |
+|---|---|---|---|
+| Stage report | `.superpowers/reports/stage-NN-<name>.md` | No — must be gitignored | Full record: result, verification, problems, notes |
+| Improvement backlog | `IMPROVEMENTS.md` | Yes — never gitignored | Every non-critical finding, one line per entry |
+
+> [!IMPORTANT]
+> The contract instructs the agent to add `.superpowers/reports/` to your `.gitignore` in the stage that creates it. `IMPROVEMENTS.md` is explicitly never ignored — a backlog that is not versioned does not survive.
+
+### Approval boundaries in short
+
+- No functional change without explicit approval. Approval is per stage and authorizes nothing outside it.
+- Two narrow exceptions exist: fully reversible non-functional edits, and bug fixes that stay inside the approved stage's scope. Both are reported.
+- Everything else — wording, formatting, file placement, trivially reversible details — is resolved without asking, and stated in one line.
+- Ambiguity about your intent or a product decision is never trivial; it is always worth a question.
+
+### Commits
+
+One stage, one commit, in the format `type: brief description`, where `type` is one of `feat`, `fix`, `refactor`, `chore`, `docs`, `style`, `perf`, `test`, `ci`, `build`. Approval of a stage *is* the request to commit that stage — nothing is committed on your behalf without it.
 
 ---
 
-## Directive Commands
+## Verbatim Strings
 
-These exact phrases trigger structured agent workflows — no deviation:
+The contract is not command-driven: it applies to every interaction without being invoked. There is no directive command language to learn.
 
-| Command | Workflow triggered |
-|---------|--------------------|
-| `PLAN APPROVED` | Acknowledge plan, execute only the first step, wait for confirmation. |
-| `PONYTAIL REVIEW` | Audit for over‑engineering; report only, no refactor. |
-| `DOCS UPDATE` | Scan docs against reality, flag staleness, update, and commit. |
-| `CODE REVIEW` | Run the requesting‑code‑review skill against the current work. |
-| `GRILL` / `GRILL WITH DOCS` | Additively interrogate the plan; optionally produce an ADR + glossary. |
-| `SUMMARIZE` | Tight bullet‑point stage summary. |
-| `HALT` | Stop all execution immediately, await explanation. |
+A small number of phrases are specified verbatim, because the exact wording is part of the requirement:
+
+| Phrase | Where it is required |
+|---|---|
+| `HALT` | The agent's response to a critical flaw discovered after approval (section 0) |
+| `Nothing to report.` | The required answer when a review finds no real problem (rule 2.1) |
+| `No defects detected. All logic is consistent.` | The required answer when a diagnostic finds no defect (rule 2.1) |
+| `I don't know` | The required answer when the agent is uncertain, together with what information would help |
+| `type: brief description` | The commit message format, where `type` is `feat`, `fix`, `refactor`, `chore`, `docs`, `style`, `perf`, `test`, `ci`, or `build` (rule 3.2) |
+
+> [!NOTE]
+> An earlier version of this prompt shipped a seven-command directive set (`PLAN APPROVED`, `PONYTAIL REVIEW`, `DOCS UPDATE`, `CODE REVIEW`, `GRILL`, `SUMMARIZE`, `HALT`) and a `codebase-memory-mcp` integration. Both were removed — the stage/iteration model replaced the commands, and no MCP dependency remains. If you rely on those markers, define your own; the contract does not implement them.
 
 ---
 
 ## Limitations
 
-Be honest about what this prompt does **not** do:
+Stated plainly, because the file that preaches honesty should practice it:
 
-- It does not replace human oversight — it *increases* the agent's assertiveness, so it will push back and sometimes pause work that a human manager is not expecting to be paused.
-- The full code‑discovery workflow requires `codebase-memory-mcp`; without it, Section 4 is inert and the agent falls back to grep/glob.
-- Its strictness (ask‑before‑acting, stage‑by‑stage execution) is slower for trivial, single‑step tasks where a more permissive agent would just act.
-- It is a behavioral contract, not a task executor — results depend entirely on the underlying model's reasoning capability.
+- **It is prose, not code.** Nothing is compiled, tested, or executed. A malformed rule cannot be caught by a test suite; only a human reading it will notice.
+- **It does not replace human oversight.** It *increases* assertiveness, so the agent will push back and pause work that you did not expect to be paused.
+- **It is slower on trivial work.** Ask-before-acting and stage-by-stage execution cost more than a permissive agent would spend on a one-line change.
+- **It is bounded by the underlying model.** The contract sharpens behavior; it cannot add reasoning capability the model does not have.
+- **It is inert if the agent does not load it.** Not every agent reads `AGENTS.md`; some expect a different filename or an explicit reference. Verify, as described in Quick Start.
+- **Its skill stance is opinionated.** Rules 1.1–1.4 demote skills to tools and override session-injected skill mandates. In a workflow built around mandatory skills, this contract will fight the harness.
 
 ---
 
 ## Recommendations
 
-- Start on a **non‑critical project** you already know well — the first few interactions show a noticeably more assertive agent, and it helps to calibrate expectations before it runs on anything urgent.
-- Use the **directive commands** as the primary interface for multi‑step work; they impose the discipline the prompt describes.
-- If your agent doesn't support `codebase-memory-mcp`, either install it or expect the code‑discovery sections to be skipped.
-- Adapt the "Directive Commands" list to your own workflow markers — they are examples of the pattern, not a hard API.
+- Start on a **non-critical project you already know well.** The first interactions are noticeably more assertive; calibrate expectations before running it on anything urgent.
+- **Read section 5 first.** It tells you which rules are unconditional and which activate only inside a project with an approved plan — the most common source of surprise.
+- **Expect a one-line plan even for a one-line change.** That is rule 1.15 working as designed, not friction to route around.
+- **Check `IMPROVEMENTS.md` periodically.** It is a running record of the shortcomings the agent noticed and deliberately did not fix, which is more useful than a report that claims nothing was found.
+- **Adapt rather than fork.** The file is one document with numbered rules; if a rule does not fit your workflow, change that rule instead of maintaining a separate variant.
+- **Decide the skill question before installing.** If your agent's harness injects mandatory skills, reconcile rules 1.1–1.4 first.
+
+---
+
+## Support
+
+- Report behavioral problems and rule ambiguities through [GitHub Issues](https://github.com/dimassaa/ai-agent-system-prompt/issues).
+- Use pull requests for proposed rule changes; each PR is reviewed against the philosophy in [Why This Prompt Exists](#why-this-prompt-exists).
 
 ---
 
 ## Contributing
 
-Contributions are welcome. Please:
+Contributions are welcome. The artifact is a prompt, so review criteria are stricter than they look:
 
-1. Open an issue describing the behavior change or addition you want before submitting a PR.
-2. Keep the prompt's voice and structure — every rule must stay a clear, self‑contained instruction that answers *why*.
-3. Add a short note in your PR explaining the rationale, alternatives considered, and any trade‑offs.
+1. Open an issue describing the behavior change before submitting a pull request.
+2. Every rule must be a self-contained instruction that answers *why*, not only *what*.
+3. Numbering is load-bearing — rules reference each other (for example 1.7 cites 1.14, and section 5 enumerates rules by number). Renumbering is a breaking change; update every cross-reference in the same PR.
+4. Explain in the PR body what changed, why this way, and which alternative you rejected.
+5. Do not add features that the file does not currently need. Rule 4.3 applies to the prompt itself.
 
-See the issue tracker for open work. Pull requests are reviewed against the philosophy in [Why This Prompt Exists](#why-this-prompt-exists).
+`AGENTS.md` is the only maintained artifact. This README documents it and carries no rules of its own.
 
 ---
 
@@ -161,4 +256,5 @@ Distributed under the [MIT License](LICENSE). See `LICENSE` for details.
 
 ## Acknowledgements
 
-- Inspired by the recurring failure mode of agreeable coding agents — and by the programming style guides that insist code be written for the human reading it at 3 AM.
+- Inspired by the recurring failure mode of agreeable coding agents.
+- Inspired by programming style guides that insist code be written for the human reading it at three in the morning.
