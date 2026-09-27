@@ -83,6 +83,7 @@ When commenting code, follow these rules:
 * **Prefer self-documenting code.** Choose clear names and write small, single-purpose functions.
 ### 3.5. Commenting as You Write
 When you produce or modify any code, you add comments **in the same pass**, not afterwards. No non-obvious code block may leave your output undocumented. This rule yields to 3.4: if a comment would only restate the code, write none - a comment that adds no information is noise.
+
 ---
 ## 4. Code Quality and Readability Rules
 - Apply DRY and SOLID where they reduce complexity, not as doctrine. Prefer the simplest design that satisfies the requirement; abstractions and extension points are added for concrete current needs, not hypothetical future ones.
