@@ -16,6 +16,7 @@ A ready-to-adopt agent instruction file that turns any capable LLM coding agent 
 - [Project Structure](#project-structure)
 - [Quick Start](#quick-start)
 - [How the Contract Works](#how-the-contract-works)
+- [Code Discovery](#code-discovery)
 - [Verbatim Strings](#verbatim-strings)
 - [Limitations](#limitations)
 - [Recommendations](#recommendations)
@@ -30,13 +31,14 @@ A ready-to-adopt agent instruction file that turns any capable LLM coding agent 
 
 This repository publishes a single file — **`AGENTS.md`** — that acts as a complete behavioral contract for an AI coding agent. Where most agent prompts optimize for obedience, this one optimizes for **truthfulness and discipline**.
 
-It installs five rule groups into the agent's working context:
+It installs six rule groups into the agent's working context:
 
 - **Advisor stance** — the agent challenges weak reasoning, names self-deception, and states "Nothing to report" when there is genuinely nothing to report. It never fabricates findings to look useful.
 - **Delivery discipline** — work is split into stages; a stage is the unit of approval, of reporting, and of committing. A rejected stage starts a new iteration of the same stage instead of a new one.
 - **Honest diagnostics** — a strict protocol for bug reports, speculative risks, and non-critical findings, including mandatory escalation to a tracked `IMPROVEMENTS.md` backlog.
 - **Code quality** — obvious over clever, maintainable over elegant, comments that explain *why*, fail-fast validation, and a critical/trivial test that decides whether a test earns its keep.
 - **Scope of application** — an explicit list of which rules are global and which apply only inside a project with an approved plan.
+- **Graph-based code discovery** — a knowledge graph of the project takes priority over grep and glob, with three defined evidence tiers and explicit rules about what a graph result does and does not prove.
 
 > [!NOTE]
 > The file deliberately *inverts* the common skill-first setup. Rule 1.1 states that the file outranks session-injected skill mandates, and rules 1.2–1.4 treat loading a skill "just in case" as a defect. Adapt that stance only if your workflow depends on skills.
@@ -64,14 +66,15 @@ This repository ships prose, not code, so the stack is deliberately short. The t
 
 | Category | Technology / Requirement |
 |---|---|
-| Artifact | `AGENTS.md` — GitHub-flavored Markdown, 158 lines |
+| Artifact | `AGENTS.md` — GitHub-flavored Markdown, 192 lines |
 | Instruction standard | `AGENTS.md` (agents.md standard), plus equivalents such as `CLAUDE.md` where required |
 | Runtime | Any AI coding agent that loads a project-level or user-level instruction file |
 | Optional dependency | `subagent-driven-development` skill — used only for genuinely multi-task plans (rule 1.17) |
+| Optional MCP server | `codebase-memory-mcp` — the knowledge graph behind section 6. Rules 6.1–6.4 degrade to plain tools without it |
 | Build / test / CI | None — the artifact is not executable |
 | License | MIT |
 
-No runtime, package manager, or environment variable is involved. Installation is a file copy.
+No runtime, package manager, or environment variable is involved. Installing the contract is a file copy; installing the knowledge graph is a separate, optional step described in [Code Discovery](#code-discovery).
 
 ---
 
@@ -160,6 +163,7 @@ flowchart TD
 | 3. Additional Best Practices | Stage review gate, commit protocol, commenting rules |
 | 4. Code Quality | Simplicity, readability, fail-fast, dead code, testing discipline |
 | 5. Scope of Application | Which rules are always on, and which require an approved plan |
+| 6. Codebase Memory | Graph-first code discovery, evidence tiers, and what an index result does not prove |
 
 ### Deliverables the contract creates in your project
 
@@ -199,7 +203,56 @@ A small number of phrases are specified verbatim, because the exact wording is p
 | `type: brief description` | The commit message format, where `type` is `feat`, `fix`, `refactor`, `chore`, `docs`, `style`, `perf`, `test`, `ci`, or `build` (rule 3.2) |
 
 > [!NOTE]
-> An earlier version of this prompt shipped a seven-command directive set (`PLAN APPROVED`, `PONYTAIL REVIEW`, `DOCS UPDATE`, `CODE REVIEW`, `GRILL`, `SUMMARIZE`, `HALT`) and a `codebase-memory-mcp` integration. Both were removed — the stage/iteration model replaced the commands, and no MCP dependency remains. If you rely on those markers, define your own; the contract does not implement them.
+> An earlier version of this prompt shipped a seven-command directive set (`PLAN APPROVED`, `PONYTAIL REVIEW`, `DOCS UPDATE`, `CODE REVIEW`, `GRILL`, `SUMMARIZE`, `HALT`). It was removed — the stage/iteration model replaced it. If you rely on those markers, define your own; the contract does not implement them.
+
+---
+
+## Code Discovery
+
+Section 6 makes a persistent knowledge graph of the project the primary tool for code discovery, ahead of grep, glob, and file-by-file reading. The argument is quantitative: a handful of structural queries costs roughly two orders of magnitude fewer tokens than reading the files they describe.
+
+The graph is produced by tree-sitter parsing and stored locally in `~/.cache/codebase-memory-mcp/`. It is a structural backend with no LLM inside — the agent remains the layer that turns a question into a graph query.
+
+### Installing the server
+
+This step is optional. Without it, rules 6.1–6.4 degrade to plain tools and the rest of the contract is unaffected.
+
+```bash
+bash ~/.local/bin/install.sh
+codebase-memory-mcp uninstall   # removes the MCP entry in opencode.jsonc, the skill, the agents, and the plugin
+```
+
+Index a project with `index_repository`; a background watcher keeps the index current afterwards. The graph UI is available at `http://localhost:9749`:
+
+```bash
+codebase-memory-mcp --ui=true --port=9749
+```
+
+### Tool priority
+
+| Tool | Answers |
+|---|---|
+| `search_graph` | Functions, classes, routes, and variables by name pattern, label, and degree |
+| `trace_path` | Callers (inbound) or callees (outbound) of a symbol |
+| `get_code_snippet` | The exact source of a qualified symbol |
+| `check_index_coverage` | Whether a cited path is indexed and free of gaps |
+| `query_graph` | Cypher, for questions the dedicated tools do not cover |
+| `get_architecture` | Languages, packages, entry points, routes, hotspots, and boundaries in one call |
+
+### Evidence tiers
+
+The tier decides what a conclusion is allowed to claim.
+
+| Tier | Name | Use | Not allowed |
+|---|---|---|---|
+| 1 | Scout | A few narrow calls for a quick positive answer | Claims of absence, exhaustive impact, dead code |
+| 2 | Verify | Task-directed evidence, both trace directions where the direction matters, exact snippets for material claims | — (default tier) |
+| 3 | Auditor | Bounded scope, current generation, complete relevant pagination | Anything without stating a limitation |
+
+> [!IMPORTANT]
+> A clean coverage result means "no recorded gap", never completeness. Before any negative claim — nothing calls it, no such route, this is dead code — the agent must run `check_index_coverage` and then read or grep every range and file reported as partial, skipped, stale, or unknown. The index can also lag: the project and its generation are re-confirmed at session start, after a compaction, and after a pull, because a stale index answers confidently and wrongly.
+
+The graph indexes code, not everything else. String literals, error messages, config values, shell scripts, Dockerfiles, and CI files stay with grep, glob, and read — as does any question the graph cannot answer usefully.
 
 ---
 
@@ -213,15 +266,18 @@ Stated plainly, because the file that preaches honesty should practice it:
 - **It is bounded by the underlying model.** The contract sharpens behavior; it cannot add reasoning capability the model does not have.
 - **It is inert if the agent does not load it.** Not every agent reads `AGENTS.md`; some expect a different filename or an explicit reference. Verify, as described in Quick Start.
 - **Its skill stance is opinionated.** Rules 1.1–1.4 demote skills to tools and override session-injected skill mandates. In a workflow built around mandatory skills, this contract will fight the harness.
+- **Section 6 depends on an MCP server you may not run.** The graph rules are inert without `codebase-memory-mcp`, and an agent that reports "no such symbol" from an unindexed project has produced a false negative that the coverage rule exists to prevent.
+- **The graph is a point of failure, not an oracle.** Every rule 6.2 adds exists because a confident wrong answer from a stale or partial index is worse than no answer.
 
 ---
 
 ## Recommendations
 
 - Start on a **non-critical project you already know well.** The first interactions are noticeably more assertive; calibrate expectations before running it on anything urgent.
-- **Read section 5 first.** It tells you which rules are unconditional and which activate only inside a project with an approved plan — the most common source of surprise.
+- **Read section 5 first.** It tells you which rules are unconditional and which activate only inside a project with an approved plan — the most common source of surprise. Note that section 6 is unconditional.
 - **Expect a one-line plan even for a one-line change.** That is rule 1.15 working as designed, not friction to route around.
 - **Check `IMPROVEMENTS.md` periodically.** It is a running record of the shortcomings the agent noticed and deliberately did not fix, which is more useful than a report that claims nothing was found.
+- **Install the knowledge graph on a large codebase, and read section 6 in full on a small one.** The token economics that justify graph-first discovery only pay off once the project is big enough to hurt.
 - **Adapt rather than fork.** The file is one document with numbered rules; if a rule does not fit your workflow, change that rule instead of maintaining a separate variant.
 - **Decide the skill question before installing.** If your agent's harness injects mandatory skills, reconcile rules 1.1–1.4 first.
 
